@@ -13,55 +13,45 @@ module systolic_array
     output signed [BITS_C-1:0] Cout [DIM-1:0]
   );
 
-  wire signed [BITS_AB-1:0] horizontal [DIM-1:0][DIM-1:0];
-  wire signed [BITS_AB-1:0] vertical [DIM-1:0][DIM-1:0];
+  wire signed [BITS_AB-1:0] aout_grid [DIM-1:0][DIM-1:0];
+  wire signed [BITS_AB-1:0] bout_grid [DIM-1:0][DIM-1:0];
+  wire signed [BITS_AB-1:0] ain_grid [DIM-1:0][DIM-1:0];
+  wire signed [BITS_AB-1:0] bin_grid [DIM-1:0][DIM-1:0];
 
-  wire signed [BITS_C-1:0] grid_cout [DIM-1:0][DIM-1:0];
+  wire signed [BITS_C-1:0] cout_grid [DIM-1:0][DIM-1:0];
+  wire signed [BITS_C-1:0] cin_grid [DIM-1:0][DIM-1:0];
 
-  generate
-    genvar row, col;
-    for (row = 0; row < DIM; row = row + 1) begin : rowgen
-      for (col = 0; col < DIM; col = col + 1) begin : colgen
+  wire wren_grid [DIM-1:0][DIM-1:0];
 
-        wire signed [BITS_AB-1:0] Ain, Bin, Aout, Bout;
-        wire signed [BITS_C-1:0] mac_cout;
+  tpumac #(BITS_AB, BITS_C) grid [DIM-1:0][DIM-1:0] (
+    .clk(clk),
+    .rst_n(rst_n),
+    .WrEn(wren_grid),
+    .en(en),
+    .Ain(ain_grid),
+    .Bin(bin_grid),
+    .Cin(cin_grid),
+    .Aout(aout_grid),
+    .Bout(bout_grid),
+    .Cout(cout_grid)
+  );
 
-        wire mac_WrEn;
+  assign Cout = cout_grid[Crow];
 
-        tpumac #(BITS_AB, BITS_C) mac (
-          .clk(clk),
-          .rst_n(rst_n),
-          .WrEn(mac_WrEn),
-          .en(en),
-          .Ain(Ain),
-          .Bin(Bin),
-          .Cin(Cin[row]),
-          .Aout(Aout),
-          .Bout(Bout),
-          .Cout(mac_cout)
-        );
-
-        assign grid_cout[row][col] = mac_cout;
-        assign mac_WrEn = (Crow == row) ? WrEn : 1'b0;
-
-        if (col == 0) begin
-          assign Ain = A[row];
-          assign horizontal[0][row] = Aout;
-        end else begin
-          assign Ain = horizontal[col - 1][row];
-          assign horizontal[col][row] = Aout;
-        end
-        if (row == 0) begin
-          assign Bin = B[col];
-          assign vertical[0][col] = Bout;
-        end else begin
-          assign Bin = vertical[row - 1][col];
-          assign vertical[row][col] = Bout;
-        end
-      end
+  for (int i = 0; i < DIM; i = i + 1) begin
+    assign ain_grid[i][0] = A[i];
+    assign bin_grid[0][i] = B[i];
+  end
+  for (int i = 1; i < DIM; i = i + 1) begin
+    for (int j = 0; j < DIM; j = j + 1) begin
+      assign ain_grid[j][i] = aout_grid[j][i - 1];
+      assign bin_grid[i][j] = bout_grid[i - 1][j];
     end
-  endgenerate
-
-  assign Cout = grid_cout[Crow];
-
+  end
+  for (int row = 0; row < DIM; row = row + 1) begin
+    for (int col = 0; col < DIM; col = col + 1) begin
+      assign cin_grid[row][col] = Cin[col];
+      assign wren_grid[row][col] = (Crow == row) ? WrEn : 1'b0;
+    end
+  end
 endmodule
