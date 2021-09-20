@@ -54,8 +54,8 @@ module systolic_array
     end
     for (row = 0; row < DIM; row = row + 1) begin : wren_row
       for (col = 0; col < DIM; col = col + 1) begin : wren_col
-        assign cin_grid[row][col] = Cin[col];
         assign wren_grid[row][col] = (Crow == row) ? WrEn : 1'b0;
+        assign cin_grid[row][col] = wren_grid[row][col] ? Cin[col] : cout_grid[row][col];
       end
     end
   endgenerate
