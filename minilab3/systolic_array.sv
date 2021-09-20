@@ -36,8 +36,6 @@ module systolic_array
     .Cout(cout_grid)
   );
 
-  assign Cout[7:0] = cout_grid[Crow][0:7];
-
   generate
     genvar i, j;
     genvar row, col;
@@ -45,6 +43,7 @@ module systolic_array
     for (i = 0; i < DIM; i = i + 1) begin : init
       assign ain_grid[i][0] = A[i];
       assign bin_grid[0][i] = B[i];
+      assign Cout[i] = cout_grid[Crow][DIM - i - 1];
     end
     for (i = 1; i < DIM; i = i + 1) begin : conn_i
       for (j = 0; j < DIM; j = j + 1) begin : conn_j
