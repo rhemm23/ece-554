@@ -25,7 +25,7 @@ module tpumac
         if (WrEn) begin
           Cout <= Cin;
         end else begin
-          Cout <= (Ain * Bin) + Cin;
+          Cout <= (Ain * Bin) + Cout;
         end
       end
     end
