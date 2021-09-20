@@ -13,6 +13,12 @@ module systolic_array
     output signed [BITS_C-1:0] Cout [DIM-1:0]
   );
 
-  
+  generate
+    genvar row, col;
+    for (row = 0; row < DIM; row = row + 1) begin : rowgen
+      for (col = 0; col < DIM; col = col + 1) begin : colgen
 
+      end
+    end
+  endgenerate
 endmodule
