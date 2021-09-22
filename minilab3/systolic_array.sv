@@ -36,6 +36,8 @@ module systolic_array
     .Cout(cout_grid)
   );
 
+  assign Cout = cout_grid[Crow];
+
   generate
     genvar i, j;
     genvar row, col;
@@ -43,7 +45,6 @@ module systolic_array
     for (i = 0; i < DIM; i = i + 1) begin : init
       assign ain_grid[i][0] = A[i];
       assign bin_grid[0][i] = B[i];
-      assign Cout[i] = cout_grid[Crow][DIM - i - 1];
     end
     for (i = 1; i < DIM; i = i + 1) begin : conn_i
       for (j = 0; j < DIM; j = j + 1) begin : conn_j
@@ -53,7 +54,7 @@ module systolic_array
     end
     for (row = 0; row < DIM; row = row + 1) begin : wren_row
       for (col = 0; col < DIM; col = col + 1) begin : wren_col
-        assign cin_grid[row][col] = Cin[DIM - col - 1];
+        assign cin_grid[row][col] = Cin[col];
         assign wren_grid[row][col] = (Crow == row) ? WrEn : 1'b0;
       end
     end
